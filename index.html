@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CRDT 实时看板</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>CRDT 实时看板</h1>
+        <p class="subtitle">BroadcastChannel + IndexedDB + Pointer Events</p>
+      </div>
+      <div class="status-bar" aria-live="polite">
+        <span id="connection-dot" class="status-dot online"></span>
+        <span id="connection-text">在线</span>
+        <span class="status-sep">·</span>
+        <span id="peer-count">0 个标签页</span>
+        <span class="status-sep">·</span>
+        <span id="sync-latency">同步 -- ms</span>
+        <span class="status-sep">·</span>
+        <span id="pending-count">待同步 0</span>
+        <button id="connection-toggle" class="secondary-button" type="button">断开连接</button>
+      </div>
+    </header>
+
+    <main class="board" id="board" aria-label="看板"></main>
+
+    <dialog id="edit-dialog" class="edit-dialog">
+      <form method="dialog" id="edit-form">
+        <h2>编辑卡片</h2>
+        <label>
+          标题
+          <input id="edit-title" maxlength="120" required />
+        </label>
+        <label>
+          描述
+          <textarea id="edit-description" maxlength="500" rows="4"></textarea>
+        </label>
+        <menu>
+          <button value="cancel" class="secondary-button" type="submit">取消</button>
+          <button id="edit-save" value="save" type="submit">保存</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
