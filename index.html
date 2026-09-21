@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRDT 协同看板</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --col-bg: #ebecf0; --card-bg: #fff;
+    --accent: #0c66e4; --danger: #ae2e24; --text: #172b4d; --muted: #626f86;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+           background: #1d2125; color: #fff; flex-wrap: wrap; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  .badge { font-size: 12px; padding: 3px 10px; border-radius: 12px; background: #2c333a; }
+  .badge.online { background: #1f845a; }
+  .badge.offline { background: #ae2e24; }
+  #latency { font-size: 12px; color: #9fadbc; }
+  #offlineBtn { margin-left: auto; padding: 6px 14px; border: 0; border-radius: 6px;
+                background: #579dff; color: #1d2125; font-weight: 600; cursor: pointer; }
+  #offlineBtn.active { background: #f87168; }
+  main { display: flex; gap: 16px; padding: 20px; align-items: flex-start; overflow-x: auto; }
+  .column { background: var(--col-bg); border-radius: 10px; width: 300px; flex-shrink: 0;
+            display: flex; flex-direction: column; max-height: calc(100vh - 110px); }
+  .column h2 { font-size: 14px; padding: 12px 14px 6px; color: var(--muted);
+               text-transform: uppercase; letter-spacing: .5px; }
+  .cards { padding: 6px 10px; overflow-y: auto; min-height: 40px; flex: 1; }
+  .card { background: var(--card-bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+          box-shadow: 0 1px 1px rgba(9,30,66,.25); cursor: grab; user-select: none;
+          position: relative; touch-action: none; }
+  .card:hover { outline: 2px solid #85b8ff; }
+  .card.dragging { opacity: .4; }
+  .card .title { font-size: 14px; font-weight: 600; word-break: break-word; }
+  .card .desc { font-size: 12px; color: var(--muted); margin-top: 4px; word-break: break-word; }
+  .card .del { position: absolute; top: 6px; right: 8px; border: 0; background: none;
+               color: var(--muted); cursor: pointer; font-size: 14px; visibility: hidden; }
+  .card:hover .del { visibility: visible; }
+  .card .del:hover { color: var(--danger); }
+  .drop-indicator { height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 8px; }
+  .add-btn { margin: 4px 10px 10px; padding: 8px; border: 0; border-radius: 8px; background: none;
+             color: var(--muted); text-align: left; cursor: pointer; font-size: 14px; }
+  .add-btn:hover { background: rgba(9,30,66,.08); color: var(--text); }
+  /* 编辑弹窗 */
+  dialog { border: 0; border-radius: 10px; padding: 20px; width: 340px;
+           box-shadow: 0 8px 24px rgba(9,30,66,.3); }
+  dialog::backdrop { background: rgba(9,30,66,.4); }
+  dialog h3 { margin-bottom: 12px; font-size: 15px; }
+  dialog input, dialog textarea { width: 100%; padding: 8px; margin-bottom: 10px; font-size: 14px;
+           border: 1px solid #dfe1e6; border-radius: 6px; font-family: inherit; }
+  dialog textarea { resize: vertical; min-height: 60px; }
+  dialog .row { display: flex; gap: 8px; justify-content: flex-end; }
+  dialog button { padding: 7px 16px; border: 0; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  dialog .save { background: var(--accent); color: #fff; }
+  dialog .cancel { background: #dfe1e6; }
+  .hint { padding: 0 20px 12px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>📋 CRDT 协同看板</h1>
+  <span class="badge" id="tabId"></span>
+  <span class="badge online" id="netStatus">在线</span>
+  <span id="latency">同步延迟: —</span>
+  <button id="offlineBtn">模拟离线</button>
+</header>
+<main id="board"></main>
+<div class="hint">拖拽卡片排序 / 跨列移动 · 双击卡片编辑 · 悬停点 × 删除 · 多开标签页实时同步（BroadcastChannel + IndexedDB + CRDT）</div>
+
+<dialog id="editDialog">
+  <h3>编辑卡片</h3>
+  <input id="editTitle" placeholder="标题" maxlength="100">
+  <textarea id="editDesc" placeholder="描述（可选）"></textarea>
+  <div class="row">
+    <button class="cancel" id="editCancel">取消</button>
+    <button class="save" id="editSave">保存</button>
+  </div>
+</dialog>
+
+<script src="crdt.js"></script>
+<script src="sync.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
